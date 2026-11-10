@@ -4,12 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>VANTIA | Empleo Juvenil Verificado</title>
+
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
 <header class="site-header">
   <nav class="contenedor menu">
     <a class="logo" href="index.php?pagina=inicio">VANTIA<span>.</span></a>
+      <li class="nav-item">
+    <a class="nav-link" href="index.php?pagina=soporte">
+        🎧 Atención al Cliente
+    </a>
+</li>
     
     <div class="links">
       <a href="index.php?pagina=inicio">Inicio</a>

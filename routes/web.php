@@ -21,4 +21,9 @@ return [
     'login' => ['AuthController', 'formulario'],
     'validar_login' => ['AuthController', 'validar'],
     'salir' => ['AuthController', 'salir'],
+    'soporte'                  => ['SoporteController', 'index'],
+    'enviar_soporte'           => ['SoporteController', 'enviarConsulta'],
+    
+
+
 ];
