@@ -210,9 +210,9 @@
                                 <span class="input-group-text"><i class="bi bi-people text-muted"></i></span>
                                 <select class="form-select form-select-custom" id="rol" name="rol" required>
                                     <option value="" disabled selected>Selecciona tu rol...</option>
-                                    <option value="Empleado / Candidato">👨‍💻 Empleado / Candidato</option>
-                                    <option value="Empleador / Empresa">🏢 Empleador / Empresa</option>
-                                    <option value="Visitante">👤 Visitante General</option>
+                                    <option value="Empleado / Candidato">Empleado / Candidato</option>
+                                    <option value="Empleador / Empresa">Empleador / Empresa</option>
+                                    <option value="Visitante">Visitante General</option>
                                 </select>
                             </div>
                         </div>
