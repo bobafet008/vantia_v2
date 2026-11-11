@@ -1,55 +1,92 @@
 <?php
+require_once __DIR__ . '/UsuarioMay.php';
+require_once __DIR__ . '/UsuarioMen.php';
+
 class Usuario
 {
     private $conexion;
+    private $modeloMay;
+    private $modeloMen;
 
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-    }
-
-    public function crear($datos)
-    {
-        $sql = 'INSERT INTO usuarios (
-                    nombre, correo, contrasena, tipo, telefono, fecha_nacimiento,
-                    es_menor, tutor_nombre, tutor_telefono, tutor_relacion,
-                    nit, roe, descripcion_empresa
-                ) VALUES (
-                    :nombre, :correo, :contrasena, :tipo, :telefono, :fecha_nacimiento,
-                    :es_menor, :tutor_nombre, :tutor_telefono, :tutor_relacion,
-                    :nit, :roe, :descripcion_empresa
-                )';
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute($datos);
+        $this->modeloMay = new UsuarioMay($conexion);
+        $this->modeloMen = new UsuarioMen($conexion);
     }
 
     public function buscarPorCorreo($correo)
     {
-        $sql = 'SELECT * FROM usuarios WHERE correo = :correo LIMIT 1';
-        $consulta = $this->conexion->prepare($sql);
-        $consulta->execute(['correo' => $correo]);
-        return $consulta->fetch(PDO::FETCH_ASSOC);
+        // Primero buscar en usuarios mayores / admin
+        $usuario = $this->modeloMay->buscarPorCorreo($correo);
+        if ($usuario) {
+            $usuario['es_menor'] = 0;
+            $usuario['candidato_tipo'] = 'mayor';
+            $usuario['tabla_origen'] = 'usuarios_may';
+            return $usuario;
+        }
+
+        // Si no está, buscar en usuarios menores
+        $usuario = $this->modeloMen->buscarPorCorreo($correo);
+        if ($usuario) {
+            $usuario['tipo'] = 'empleado';
+            $usuario['es_menor'] = 1;
+            $usuario['candidato_tipo'] = 'menor';
+            $usuario['tabla_origen'] = 'usuarios_men';
+            return $usuario;
+        }
+
+        return null;
     }
 
-    public function obtenerPorId($id)
+    public function obtenerPorId($id, $candidatoTipo = null)
     {
+        if ($candidatoTipo === 'menor') {
+            $res = $this->modeloMen->obtenerPorId($id);
+            if ($res) {
+                $res['tipo'] = 'empleado';
+                $res['es_menor'] = 1;
+                $res['candidato_tipo'] = 'menor';
+            }
+            return $res;
+        }
+
+        if ($candidatoTipo === 'mayor') {
+            $res = $this->modeloMay->obtenerPorId($id);
+            if ($res) {
+                $res['es_menor'] = 0;
+                $res['candidato_tipo'] = 'mayor';
+            }
+            return $res;
+        }
+
+        // Si no se especifica, consultar la vista unificada usuarios
         $sql = 'SELECT * FROM usuarios WHERE id = :id LIMIT 1';
         $consulta = $this->conexion->prepare($sql);
         $consulta->execute(['id' => (int) $id]);
         return $consulta->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerPorTipo($tipo)
-    {
-        $sql = 'SELECT * FROM usuarios WHERE tipo = :tipo ORDER BY fecha_registro DESC';
-        $consulta = $this->conexion->prepare($sql);
-        $consulta->execute(['tipo' => $tipo]);
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function obtenerTodos()
     {
-        $sql = 'SELECT * FROM usuarios ORDER BY fecha_registro DESC';
-        return $this->conexion->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $mayores = $this->modeloMay->obtenerTodos();
+        $menores = $this->modeloMen->obtenerTodos();
+        return array_merge($mayores, $menores);
+    }
+
+    public function obtenerPorTipo($tipo)
+    {
+        if ($tipo === 'admin') {
+            return $this->modeloMay->obtenerPorTipo('admin');
+        }
+
+        $mayores = $this->modeloMay->obtenerPorTipo('empleado');
+        $menores = $this->modeloMen->obtenerTodos();
+        return array_merge($mayores, $menores);
+    }
+
+    public function contarCandidatos()
+    {
+        return $this->modeloMay->contarCandidatos() + $this->modeloMen->contar();
     }
 }

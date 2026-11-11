@@ -10,11 +10,13 @@ return [
     'guardar_calificacion' => ['HomeController', 'guardarCalificacion'],
     'panel_empresa' => ['HomeController', 'panelEmpresa'],
     'guardar_empleo' => ['HomeController', 'guardarEmpleo'],
+    'actualizar_empleo' => ['HomeController', 'actualizarEmpleo'],
     'alternar_empleo' => ['HomeController', 'alternarEmpleo'],
     'eliminar_empleo' => ['HomeController', 'eliminarEmpleo'],
     'cambiar_estado_postulacion' => ['HomeController', 'cambiarEstadoPostulacion'],
     'panel_admin' => ['HomeController', 'panelAdmin'],
     'toggle_verificar_empresa' => ['HomeController', 'toggleVerificarEmpresa'],
+    'eliminar_empresa' => ['HomeController', 'eliminarEmpresa'],
     'eliminar_usuario' => ['HomeController', 'eliminarUsuario'],
     'registro_empleado' => ['UsuarioController', 'registroEmpleado'],
     'registro_empresa' => ['UsuarioController', 'registroEmpresa'],
@@ -24,7 +26,6 @@ return [
     'salir' => ['AuthController', 'salir'],
     'soporte'                  => ['SoporteController', 'index'],
     'enviar_soporte'           => ['SoporteController', 'enviarConsulta'],
-    
-
-
+    'banear_cuenta'            => ['HomeController', 'banearCuenta'],
+    'desbanear_cuenta'         => ['HomeController', 'desbanearCuenta'],
 ];

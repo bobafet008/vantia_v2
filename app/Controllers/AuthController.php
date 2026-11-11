@@ -11,8 +11,11 @@ class AuthController
     {
         require __DIR__ . '/../../config/database.php';
         require_once __DIR__ . '/../Models/Usuario.php';
+        require_once __DIR__ . '/../Models/Empresa.php';
 
-        $modelo = new Usuario($conexion);
+        $modeloUsuario = new Usuario($conexion);
+        $modeloEmpresa = new Empresa($conexion);
+
         $correo = trim($_POST['correo'] ?? '');
         $contrasena = $_POST['contrasena'] ?? '';
         $tipoRequerido = $_POST['tipo'] ?? '';
@@ -26,14 +29,49 @@ class AuthController
             return;
         }
 
-        $usuario = $modelo->buscarPorCorreo($correo);
+        // 1. Si se especificó tipo empresa, intentar validar contra la tabla empresas
+        if ($tipoRequerido === 'empresa') {
+            $empresa = $modeloEmpresa->buscarPorCorreo($correo);
+            if ($empresa && password_verify($contrasena, $empresa['contrasena'])) {
+                if (estaBaneado($empresa)) {
+                    vista('login', [
+                        'tipo' => $tipoRequerido,
+                        'error' => mensajeBaneo($empresa),
+                        'correo' => $correo,
+                    ]);
+                    return;
+                }
 
+                if (isset($empresa['verificada']) && (int) $empresa['verificada'] === 0) {
+                    vista('login', [
+                        'tipo' => $tipoRequerido,
+                        'error' => 'Tu empresa aún está pendiente de revisión por el administrador.',
+                        'correo' => $correo,
+                    ]);
+                    return;
+                }
+
+                session_regenerate_id(true);
+                $_SESSION['usuario_id'] = (int) $empresa['id'];
+                $_SESSION['usuario'] = $empresa['nombre'];
+                $_SESSION['representante'] = $empresa['representante'] ?? null;
+                $_SESSION['correo'] = $empresa['correo'];
+                $_SESSION['tipo'] = 'empresa';
+                $_SESSION['es_menor'] = 0;
+                $_SESSION['tabla_usuario'] = 'empresas';
+
+                header('Location: index.php?pagina=panel_empresa');
+                exit;
+            }
+        }
+
+        // 2. Buscar en usuarios mayores (usuarios_may) o menores (usuarios_men)
+        $usuario = $modeloUsuario->buscarPorCorreo($correo);
         if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
-            // Verificar si la empresa no ha sido aprobada aún
-            if ($usuario['tipo'] === 'empresa' && isset($usuario['verificada']) && (int) $usuario['verificada'] === 0) {
+            if (estaBaneado($usuario)) {
                 vista('login', [
                     'tipo' => $tipoRequerido,
-                    'error' => 'Tu empresa aún está pendiente de revisión por el administrador.',
+                    'error' => mensajeBaneo($usuario),
                     'correo' => $correo,
                 ]);
                 return;
@@ -44,15 +82,51 @@ class AuthController
             $_SESSION['usuario'] = $usuario['nombre'];
             $_SESSION['correo'] = $usuario['correo'];
             $_SESSION['tipo'] = $usuario['tipo'];
+            $_SESSION['es_menor'] = (int) ($usuario['es_menor'] ?? 0);
+            $_SESSION['tabla_usuario'] = $usuario['tabla_origen'] ?? ($usuario['es_menor'] ? 'usuarios_men' : 'usuarios_may');
 
-            if ($usuario['tipo'] === 'empresa') {
-                header('Location: index.php?pagina=panel_empresa');
-            } elseif ($usuario['tipo'] === 'admin') {
+            if ($usuario['tipo'] === 'admin') {
                 header('Location: index.php?pagina=panel_admin');
             } else {
                 header('Location: index.php?pagina=trabajos');
             }
             exit;
+        }
+
+        // 3. Si no se especificó tipo empresa pero las credenciales corresponden a una empresa
+        if ($tipoRequerido !== 'empresa') {
+            $empresa = $modeloEmpresa->buscarPorCorreo($correo);
+            if ($empresa && password_verify($contrasena, $empresa['contrasena'])) {
+                if (estaBaneado($empresa)) {
+                    vista('login', [
+                        'tipo' => $tipoRequerido,
+                        'error' => mensajeBaneo($empresa),
+                        'correo' => $correo,
+                    ]);
+                    return;
+                }
+
+                if (isset($empresa['verificada']) && (int) $empresa['verificada'] === 0) {
+                    vista('login', [
+                        'tipo' => $tipoRequerido,
+                        'error' => 'Tu empresa aún está pendiente de revisión por el administrador.',
+                        'correo' => $correo,
+                    ]);
+                    return;
+                }
+
+                session_regenerate_id(true);
+                $_SESSION['usuario_id'] = (int) $empresa['id'];
+                $_SESSION['usuario'] = $empresa['nombre'];
+                $_SESSION['representante'] = $empresa['representante'] ?? null;
+                $_SESSION['correo'] = $empresa['correo'];
+                $_SESSION['tipo'] = 'empresa';
+                $_SESSION['es_menor'] = 0;
+                $_SESSION['tabla_usuario'] = 'empresas';
+
+                header('Location: index.php?pagina=panel_empresa');
+                exit;
+            }
         }
 
         vista('login', [

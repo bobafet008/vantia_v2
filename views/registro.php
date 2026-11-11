@@ -24,7 +24,7 @@
       <div class="mensaje-error"><?= e($error) ?></div>
     <?php endif; ?>
 
-    <form action="index.php?pagina=guardar_usuario" method="post" id="formRegistro">
+    <form action="index.php?pagina=guardar_usuario" method="post" id="formRegistro" enctype="multipart/form-data">
       <input type="hidden" name="tipo" value="<?= e($tipo) ?>">
 
       <label for="nombre">Nombre <?= $tipo === 'empresa' ? 'de la empresa' : 'completo' ?> *</label>
@@ -36,15 +36,26 @@
       <label for="contrasena">Contraseña *</label>
       <input id="contrasena" name="contrasena" type="password" required minlength="6" placeholder="Mínimo 6 caracteres">
 
-      <label for="telefono">Teléfono / WhatsApp</label>
-      <input id="telefono" name="telefono" type="text" maxlength="30" value="<?= e($form['telefono'] ?? '') ?>" placeholder="Ej. 70012345">
+      <label for="telefono">Teléfono / WhatsApp *</label>
+      <input id="telefono" name="telefono" type="text" required maxlength="30" value="<?= e($form['telefono'] ?? ($tipo === 'empresa' ? '79696368' : '')) ?>" placeholder="Ej. 79696368">
 
       <?php if ($tipo === 'empresa'): ?>
+        <label for="representante">Nombre del representante / persona de contacto *</label>
+        <input id="representante" name="representante" type="text" required maxlength="150" value="<?= e($form['representante'] ?? ($tipo === 'empresa' ? 'Misael V.' : '')) ?>" placeholder="Ej. Misael V.">
+
         <label for="nit">Número de NIT</label>
         <input id="nit" name="nit" type="text" maxlength="50" value="<?= e($form['nit'] ?? '') ?>" placeholder="Ej. 1029384756">
 
-        <label for="roe">Número de registro ROE (Obligatorio) *</label>
-        <input id="roe" name="roe" type="text" required maxlength="50" value="<?= e($form['roe'] ?? '') ?>" placeholder="Ej. ROE-2026-BO">
+        <label for="roe_archivo">Certificado / Código QR de ROE (Formato de imagen) *</label>
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:1rem; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <img id="previewRoe" src="../uploads/roe/roe_default.png" alt="Código QR ROE" style="width:85px; height:85px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; background:#fff; padding:4px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+          <div style="flex:1; min-width:200px;">
+            <div style="font-weight:600; font-size:0.88rem; color:#1e293b; margin-bottom:2px;">Imagen asignada para validación laboral</div>
+            <div style="font-size:0.78rem; color:#64748b; margin-bottom:8px;">Formato de imagen (PNG, JPG). Código QR oficial predeterminado activo. Puedes subir otra imagen si lo requieres:</div>
+            <input type="file" id="roe_archivo" name="roe_archivo" accept="image/png, image/jpeg, image/jpg" style="font-size:0.82rem;" onchange="actualizarPreviewRoe(this)">
+            <input type="hidden" name="roe_actual" value="<?= e($form['roe'] ?? 'uploads/roe/roe_default.png') ?>">
+          </div>
+        </div>
 
         <label for="descripcion_empresa">Descripción de la empresa</label>
         <textarea id="descripcion_empresa" name="descripcion_empresa" rows="3" placeholder="A qué se dedica tu empresa y qué rubro maneja"><?= e($form['descripcion_empresa'] ?? '') ?></textarea>
@@ -151,5 +162,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <?php endif; ?>
+
+<script>
+function actualizarPreviewRoe(input) {
+  if (input.files && input.files[0]) {
+    const lector = new FileReader();
+    lector.onload = function(e) {
+      const img = document.getElementById('previewRoe');
+      if (img) {
+        img.src = e.target.result;
+      }
+    };
+    lector.readAsDataURL(input.files[0]);
+  }
+}
+</script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

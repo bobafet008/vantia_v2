@@ -84,3 +84,59 @@ function subirArchivo($campoArchivo, $carpetaDestino, $prefijo = 'doc')
 
     return false;
 }
+
+// Retorna la URL relativa para visualizar un archivo subido desde las vistas
+function rutaArchivo($ruta)
+{
+    if (empty($ruta)) {
+        return '';
+    }
+    if (str_starts_with($ruta, 'http://') || str_starts_with($ruta, 'https://') || str_starts_with($ruta, 'data:')) {
+        return $ruta;
+    }
+    if (str_starts_with($ruta, 'uploads/')) {
+        return '../' . $ruta;
+    }
+    return '../uploads/' . ltrim($ruta, '/');
+}
+
+// Muestra la vista de Acceso Denegado (403 Forbidden) cuando un usuario intenta entrar a un panel no permitido
+function accesoDenegado($mensaje = 'No tienes los permisos necesarios para acceder a esta sección.', $panelRequerido = 'Panel restringido')
+{
+    http_response_code(403);
+    vista('acceso_denegado', [
+        'mensaje' => $mensaje,
+        'panelRequerido' => $panelRequerido,
+    ]);
+    exit;
+}
+
+// Determina si una cuenta (usuario o empresa) tiene un baneo activo
+function estaBaneado($cuenta)
+{
+    if (empty($cuenta) || empty($cuenta['baneado'])) {
+        return false;
+    }
+
+    if (!empty($cuenta['baneado_hasta'])) {
+        $fechaBaneo = new DateTime($cuenta['baneado_hasta']);
+        $ahora = new DateTime();
+        if ($ahora >= $fechaBaneo) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Devuelve el mensaje explicativo de la suspensión temporal o permanente
+function mensajeBaneo($cuenta)
+{
+    $motivo = !empty($cuenta['motivo_baneo']) ? ' Motivo: "' . $cuenta['motivo_baneo'] . '".' : '';
+    if (empty($cuenta['baneado_hasta'])) {
+        return 'Tu cuenta ha sido suspendida permanentemente por la administración.' . $motivo;
+    }
+
+    $hasta = date('d/m/Y H:i', strtotime($cuenta['baneado_hasta']));
+    return 'Tu cuenta se encuentra suspendida temporalmente hasta el ' . $hasta . '.' . $motivo;
+}

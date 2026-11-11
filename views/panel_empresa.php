@@ -1,16 +1,31 @@
 <?php require __DIR__ . '/partials/header.php'; ?>
 
 <section class="pagina-cabecera">
-  <div class="contenedor">
-    <span class="etiqueta">ESPACIO DE GESTIÓN EMPRESARIAL</span>
-    <h1>Panel de <?= e($_SESSION['usuario'] ?? 'Empresa') ?></h1>
-    <p>Publica oportunidades laborales y gestiona a los candidatos que se postulan a tus vacantes.</p>
-    
-    <div style="display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap;">
-      <a href="#nueva-vacante" class="boton boton-sm">+ Publicar nueva vacante</a>
-      <a href="#postulantes" class="boton boton-sm boton-oscuro">Gestionar postulantes (<?= count($postulaciones ?? []) ?>)</a>
-      <a href="index.php?pagina=trabajos" class="boton boton-sm" style="background:#e2f5e8; color:#1f7a46;">Ver bolsa pública de empleos →</a>
+  <div class="contenedor" style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;">
+    <div>
+      <span class="etiqueta">ESPACIO DE GESTIÓN EMPRESARIAL</span>
+      <h1>Panel de <?= e($_SESSION['usuario'] ?? 'Empresa') ?></h1>
+      <?php if (!empty($_SESSION['representante'])): ?>
+        <p style="margin-bottom:0.25rem;">Representante: <strong><?= e($_SESSION['representante']) ?></strong></p>
+      <?php endif; ?>
+      <p>Publica oportunidades laborales y gestiona a los candidatos que se postulan a tus vacantes.</p>
+      
+      <div style="display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap;">
+        <a href="#nueva-vacante" class="boton boton-sm">+ Publicar nueva vacante</a>
+        <a href="#postulantes" class="boton boton-sm boton-oscuro">Gestionar postulantes (<?= count($postulaciones ?? []) ?>)</a>
+        <a href="index.php?pagina=trabajos" class="boton boton-sm" style="background:#e2f5e8; color:#1f7a46;">Ver bolsa pública de empleos →</a>
+      </div>
     </div>
+
+    <?php if (!empty($empresa['roe'])): ?>
+      <div style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); border-radius:10px; padding:12px; text-align:center; min-width:130px;">
+        <a href="<?= e(rutaArchivo($empresa['roe'])) ?>" target="_blank" title="Ver código QR ROE">
+          <img src="<?= e(rutaArchivo($empresa['roe'])) ?>" alt="Código QR ROE" style="width:75px; height:75px; object-fit:contain; background:#fff; border-radius:6px; padding:3px; display:block; margin:0 auto 6px;">
+        </a>
+        <span style="font-size:0.75rem; color:#e2e8f0; font-weight:600; display:block;">Certificado ROE</span>
+        <span style="font-size:0.7rem; color:#38bdf8;">QR Verificado</span>
+      </div>
+    <?php endif; ?>
   </div>
 </section>
 
@@ -222,11 +237,25 @@
             <h2><?= e($empleo['titulo']) ?></h2>
             <p><?= nl2br(e($empleo['descripcion'])) ?></p>
             
+            <?php if (!empty($empleo['requisitos'])): ?><p><strong>Requisitos:</strong> <?= e($empleo['requisitos']) ?></p><?php endif; ?>
             <?php if (!empty($empleo['ubicacion'])): ?><p><strong>Ubicación:</strong> <?= e($empleo['ubicacion']) ?></p><?php endif; ?>
             <?php if (!empty($empleo['salario'])): ?><p><strong>Salario:</strong> <?= e($empleo['salario']) ?></p><?php endif; ?>
 
             <!-- Botones de gestión de vacante -->
             <div style="display:flex; gap:8px; margin-top:14px; padding-top:10px; border-top:1px dashed var(--linea); flex-wrap:wrap;">
+              <button type="button" class="boton-sm btn-editar-vacante" style="background:#2563eb; color:white;" data-empleo="<?= htmlspecialchars(json_encode([
+                  'id' => (int) $empleo['id'],
+                  'titulo' => (string) $empleo['titulo'],
+                  'categoria' => (string) $empleo['categoria'],
+                  'tipo' => (string) $empleo['tipo'],
+                  'descripcion' => (string) $empleo['descripcion'],
+                  'requisitos' => (string) ($empleo['requisitos'] ?? ''),
+                  'salario' => (string) ($empleo['salario'] ?? ''),
+                  'ubicacion' => (string) ($empleo['ubicacion'] ?? ''),
+              ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?>">
+                Editar
+              </button>
+
               <form action="index.php?pagina=alternar_empleo" method="post" style="display:inline;">
                 <input type="hidden" name="empleo_id" value="<?= (int) $empleo['id'] ?>">
                 <button type="submit" class="boton-sm <?= !empty($empleo['activo']) ? 'boton-outline-oscuro' : 'boton-exito' ?>">
@@ -245,5 +274,105 @@
     </div>
   </div>
 </section>
+
+<!-- Modal de Edición de Vacante -->
+<div id="modalEditarVacante" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.65); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(2px); padding:16px;">
+  <div style="background:white; border-radius:8px; width:100%; max-width:580px; max-height:92vh; overflow-y:auto; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.25); border:1px solid #cbd5e1;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+      <h3 style="margin:0; font-size:18px; color:var(--azul); font-family:Georgia,serif;">
+        Editar Vacante
+      </h3>
+      <button type="button" onclick="cerrarModalEditar()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b; line-height:1;">&times;</button>
+    </div>
+
+    <form action="index.php?pagina=actualizar_empleo" method="post" id="formEditarVacante" class="formulario" style="gap:10px;">
+      <input type="hidden" name="empleo_id" id="edit_empleo_id" value="">
+
+      <div>
+        <label for="edit_titulo" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Título del puesto *</label>
+        <input id="edit_titulo" name="titulo" type="text" required placeholder="Ej. Auxiliar de atención al cliente" style="width:100%; height:38px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+      </div>
+
+      <div class="campos-vacante" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label for="edit_categoria" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Categoría laboral *</label>
+          <input id="edit_categoria" name="categoria" type="text" required placeholder="Ej. Ventas, Logística" style="width:100%; height:38px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+        </div>
+        <div>
+          <label for="edit_tipo_empleo" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Modalidad o tipo *</label>
+          <select id="edit_tipo_empleo" name="tipo_empleo" required style="width:100%; height:38px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+            <option value="">Selecciona modalidad</option>
+            <option value="medio_tiempo">Medio tiempo</option>
+            <option value="practicas">Pasantía / Prácticas</option>
+            <option value="fines_semana">Fines de semana</option>
+            <option value="remoto">Remoto</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="edit_descripcion" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Descripción del puesto *</label>
+        <textarea id="edit_descripcion" name="descripcion" rows="4" required placeholder="Detalla las responsabilidades principales" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+      </div>
+
+      <div>
+        <label for="edit_requisitos" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Requisitos deseables</label>
+        <textarea id="edit_requisitos" name="requisitos" rows="3" placeholder="Habilidades, conocimientos o requisitos mínimos" style="width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+      </div>
+
+      <div class="campos-vacante" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label for="edit_salario" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Salario / Remuneración</label>
+          <input id="edit_salario" name="salario" type="text" maxlength="50" placeholder="Ej. Bs 2.000 al mes" style="width:100%; height:38px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+        </div>
+        <div>
+          <label for="edit_ubicacion" style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">Ubicación</label>
+          <input id="edit_ubicacion" name="ubicacion" type="text" maxlength="120" placeholder="Ej. La Paz o Remoto" style="width:100%; height:38px; padding:8px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid #e2e8f0;">
+        <button type="button" onclick="cerrarModalEditar()" class="boton-sm boton-outline-oscuro" style="border-color:#cbd5e1; color:#475569;">Cancelar</button>
+        <button type="submit" class="boton-sm" style="background:var(--dorado); color:var(--azul);">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function abrirModalEditar(datos) {
+  document.getElementById('edit_empleo_id').value = datos.id || '';
+  document.getElementById('edit_titulo').value = datos.titulo || '';
+  document.getElementById('edit_categoria').value = datos.categoria || '';
+  document.getElementById('edit_tipo_empleo').value = datos.tipo || '';
+  document.getElementById('edit_descripcion').value = datos.descripcion || '';
+  document.getElementById('edit_requisitos').value = datos.requisitos || '';
+  document.getElementById('edit_salario').value = datos.salario || '';
+  document.getElementById('edit_ubicacion').value = datos.ubicacion || '';
+  document.getElementById('modalEditarVacante').style.display = 'flex';
+}
+
+function cerrarModalEditar() {
+  document.getElementById('modalEditarVacante').style.display = 'none';
+}
+
+document.querySelectorAll('.btn-editar-vacante').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    try {
+      const data = JSON.parse(this.getAttribute('data-empleo'));
+      abrirModalEditar(data);
+    } catch (e) {
+      console.error('Error al procesar datos de la vacante:', e);
+    }
+  });
+});
+
+window.addEventListener('click', function(e) {
+  const modal = document.getElementById('modalEditarVacante');
+  if (e.target === modal) {
+    cerrarModalEditar();
+  }
+});
+</script>
 
 <?php require __DIR__ . '/partials/footer.php'; ?>

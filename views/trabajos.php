@@ -41,7 +41,17 @@
           </div>
 
           <h2><?= e($empleo['titulo']) ?></h2>
-          <p class="empresa-nombre"><strong><?= e($empleo['empresa']) ?></strong></p>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+            <p class="empresa-nombre" style="margin:0;"><strong><?= e($empleo['empresa']) ?></strong></p>
+            <?php if (!empty($empleo['roe'])): ?>
+              <div style="display:inline-flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:3px 8px;">
+                <a href="<?= e(rutaArchivo($empleo['roe'])) ?>" target="_blank" title="Ver Certificado / Código QR ROE">
+                  <img src="<?= e(rutaArchivo($empleo['roe'])) ?>" alt="ROE QR" style="width:34px; height:34px; object-fit:contain; background:#fff; border:1px solid #cbd5e1; border-radius:4px; padding:1px; vertical-align:middle; transition:transform 0.15s ease;" onmouseover="this.style.transform='scale(1.8)'" onmouseout="this.style.transform='scale(1)'">
+                </a>
+                <span style="font-size:0.75rem; font-weight:600; color:#1e293b;">ROE Verificado</span>
+              </div>
+            <?php endif; ?>
+          </div>
 
           <p class="trabajo-desc"><?= nl2br(e($empleo['descripcion'])) ?></p>
 
