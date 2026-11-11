@@ -22,7 +22,7 @@
           <a href="index.php?pagina=panel_empresa"><strong>Panel Empresa</strong></a>
         <?php elseif ($_SESSION['tipo'] === 'empleado'): ?>
           <a href="index.php?pagina=mis_postulaciones"><strong>Mis Postulaciones</strong></a>
-          <a href="index.php?pagina=mis_postulaciones#calificaciones"><strong>⭐ Calificaciones</strong></a>
+          <a href="index.php?pagina=mis_postulaciones#calificaciones"><strong>Calificaciones</strong></a>
         <?php elseif ($_SESSION['tipo'] === 'admin'): ?>
           <a href="index.php?pagina=panel_admin"><strong>Panel Admin</strong></a>
         <?php endif; ?>

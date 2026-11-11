@@ -23,8 +23,8 @@ if (!empty($postulaciones)) {
     <p>Revisa el estado de tus solicitudes y califica a las empresas donde trabajas.</p>
     
     <div style="display:flex; gap:10px; margin-top:1rem; flex-wrap:wrap;">
-      <a href="#solicitudes" class="boton boton-sm">📋 Mis Postulaciones (<?= count($postulaciones ?? []) ?>)</a>
-      <a href="#calificaciones" class="boton boton-sm boton-oscuro">⭐ Calificaciones a Empresas (<?= count($empresasContratado) ?>)</a>
+      <a href="#solicitudes" class="boton boton-sm">Mis Postulaciones (<?= count($postulaciones ?? []) ?>)</a>
+      <a href="#calificaciones" class="boton boton-sm boton-oscuro">Calificaciones a Empresas (<?= count($empresasContratado) ?>)</a>
       <a href="index.php?pagina=trabajos" class="boton boton-sm" style="background:#e2f5e8; color:#1f7a46;">Explorar más oportunidades →</a>
     </div>
   </div>
@@ -125,17 +125,17 @@ if (!empty($postulaciones)) {
               <div style="margin-top:14px; padding:10px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:4px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                   <div>
-                    <strong style="color:#166534; font-size:12px;">🏢 Empresa donde trabajas</strong>
+                    <strong style="color:#166534; font-size:12px;">Empresa donde trabajas</strong>
                     <?php if (isset($calificaciones[$post['empresa_id']])): ?>
                       <p style="margin:2px 0 0; font-size:12px; color:#14532d;">
-                        Tu puntuación: <strong><?= (int)$calificaciones[$post['empresa_id']]['puntuacion'] ?> / 5 ⭐</strong>
+                        Tu puntuación: <strong><?= (int)$calificaciones[$post['empresa_id']]['puntuacion'] ?> / 5</strong>
                       </p>
                     <?php else: ?>
                       <p style="margin:2px 0 0; font-size:12px; color:#166534;">Aún no has calificado esta empresa.</p>
                     <?php endif; ?>
                   </div>
                   <a href="#calif-empresa-<?= (int)$post['empresa_id'] ?>" class="boton-sm" style="background:#16a34a; color:white; font-size:11px;">
-                    <?= isset($calificaciones[$post['empresa_id']]) ? 'Editar nota' : '⭐ Calificar (0 a 5)' ?>
+                    <?= isset($calificaciones[$post['empresa_id']]) ? 'Editar nota' : 'Calificar (0 a 5)' ?>
                   </a>
                 </div>
               </div>
@@ -161,7 +161,7 @@ if (!empty($postulaciones)) {
     <div class="titulo-seccion">
       <div>
         <span class="etiqueta">EVALUACIÓN DE EMPLEADORES</span>
-        <h2>⭐ Calificaciones a la Empresa en donde trabajas</h2>
+        <h2>Calificaciones a la Empresa en donde trabajas</h2>
         <p class="texto-suave">Asigna un puntaje del <strong>0 al 5</strong> a tu empleador y déjanos tu opinión sobre el ambiente y cumplimiento de las condiciones pactadas.</p>
       </div>
     </div>
@@ -179,9 +179,9 @@ if (!empty($postulaciones)) {
         ?>
           <article class="trabajo" id="calif-empresa-<?= (int)$emp['empresa_id'] ?>" style="border-top: 3px solid #d5a347; background:#ffffff;">
             <div class="trabajo-header">
-              <span class="etiqueta-verificada">🏢 Lugar de Trabajo Activo</span>
+              <span class="etiqueta-verificada">Lugar de Trabajo Activo</span>
               <?php if ($puntuacion !== null): ?>
-                <span class="badge-estado badge-contratado">Tu nota: <?= $puntuacion ?> / 5 ⭐</span>
+                <span class="badge-estado badge-contratado">Tu nota: <?= $puntuacion ?> / 5</span>
               <?php else: ?>
                 <span class="badge-estado badge-pendiente">Pendiente de calificar</span>
               <?php endif; ?>
@@ -203,7 +203,7 @@ if (!empty($postulaciones)) {
                   <label style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; border: 1px solid <?= ($puntuacion === $i) ? '#d5a347' : '#d5d5d0' ?>; background: <?= ($puntuacion === $i) ? '#fbf6ec' : '#fafafa' ?>; border-radius: 4px; cursor: pointer; text-align: center; transition: all 0.2s;">
                     <input type="radio" name="puntuacion" value="<?= $i ?>" <?= ($puntuacion === $i) ? 'checked' : ($puntuacion === null && $i === 5 ? 'checked' : '') ?> required>
                     <span style="font-size: 14px; font-weight: bold; margin-top: 2px; color: var(--azul);"><?= $i ?></span>
-                    <span style="font-size: 10px; color: var(--gris);"><?= ($i === 0 ? '0 pts' : $i . '★') ?></span>
+                    <span style="font-size: 10px; color: var(--gris);"><?= ($i === 0 ? '0 pts' : $i . ' pts') ?></span>
                   </label>
                 <?php endfor; ?>
               </div>

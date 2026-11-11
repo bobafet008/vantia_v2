@@ -47,7 +47,7 @@
     </div>
     <div class="tarjeta">
       <span class="numero">03 · CALIFICACIÓN EMPLEADOS</span>
-      <h2><?= !empty($resumenCalif['total']) ? ($resumenCalif['promedio'] . ' / 5 ⭐') : 'Sin evaluar' ?></h2>
+      <h2><?= !empty($resumenCalif['total']) ? ($resumenCalif['promedio'] . ' / 5') : 'Sin evaluar' ?></h2>
       <p><?= !empty($resumenCalif['total']) ? ($resumenCalif['total'] . ' evaluación(es) de empleados contratados') : 'Puntajes otorgados por tus trabajadores' ?></p>
     </div>
   </div>
@@ -58,7 +58,7 @@
     <div class="titulo-seccion">
       <div>
         <span class="etiqueta">TRANSPARENCIA LABORAL</span>
-        <h2>⭐ Calificaciones de tus empleados</h2>
+        <h2>Calificaciones de tus empleados</h2>
         <p class="texto-suave">Evaluaciones asignadas del 0 al 5 por jóvenes contratados en tu empresa.</p>
       </div>
     </div>
@@ -66,7 +66,7 @@
       <?php foreach ($calificacionesRecibidas as $cal): ?>
         <article class="trabajo" style="border-top:3px solid #10b981;">
           <div class="trabajo-header">
-            <span class="badge-estado badge-contratado">Puntuación: <?= (int)$cal['puntuacion'] ?> / 5 ⭐</span>
+            <span class="badge-estado badge-contratado">Puntuación: <?= (int)$cal['puntuacion'] ?> / 5</span>
             <span style="font-size:11px; color:var(--gris); margin-left:auto;"><?= date('d/m/Y', strtotime($cal['creado_en'])) ?></span>
           </div>
           <h3 style="font: normal 18px Georgia,serif; color: var(--azul); margin: 6px 0 4px;">Empleado: <?= e($cal['candidato_nombre']) ?></h3>
