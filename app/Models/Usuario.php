@@ -60,11 +60,21 @@ class Usuario
             return $res;
         }
 
-        // Si no se especifica, consultar la vista unificada usuarios
-        $sql = 'SELECT * FROM usuarios WHERE id = :id LIMIT 1';
-        $consulta = $this->conexion->prepare($sql);
-        $consulta->execute(['id' => (int) $id]);
-        return $consulta->fetch(PDO::FETCH_ASSOC);
+        // Si no se especifica el tipo, buscar primero en mayores y luego en menores
+        $res = $this->modeloMay->obtenerPorId($id);
+        if ($res) {
+            $res['es_menor'] = 0;
+            $res['candidato_tipo'] = 'mayor';
+            return $res;
+        }
+
+        $res = $this->modeloMen->obtenerPorId($id);
+        if ($res) {
+            $res['tipo'] = 'empleado';
+            $res['es_menor'] = 1;
+            $res['candidato_tipo'] = 'menor';
+        }
+        return $res;
     }
 
     public function obtenerTodos()

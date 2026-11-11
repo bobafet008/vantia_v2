@@ -55,13 +55,17 @@ class UsuarioController
 
                 if ($representante === '') {
                     $error = 'El nombre del representante de la empresa es obligatorio.';
+                } elseif ($nit === '') {
+                    $error = 'El número de NIT es obligatorio.';
+                } elseif (!ctype_digit($nit) || strlen($nit) < 15) {
+                    $error = 'El NIT debe ser de mínimo 15 dígitos numéricos.';
                 } elseif (empty($roePath)) {
                     $error = 'La imagen o código QR de ROE es obligatorio para la empresa.';
                 } else {
                     $datosEmpresa = [
                         'nombre' => $nombre,
                         'representante' => $representante,
-                        'nit' => $nit ?: null,
+                        'nit' => $nit,
                         'roe' => $roePath,
                         'correo' => $correo,
                         'contrasena' => $hashContrasena,
