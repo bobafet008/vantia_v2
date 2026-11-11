@@ -51,6 +51,16 @@
 
           <div class="trabajo-meta">
             <?php if (!empty($empleo['ubicacion'])): ?>
+              <div class="mt-3" style="width: 100%; height: 220px; overflow: hidden; border-radius: 6px;">
+        <iframe 
+            src="https://maps.google.com/maps?q=<?php echo urlencode($empleo['ubicacion']); ?>&z=15&output=embed" 
+            width="100%" 
+            height="220" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy">
+        </iframe>
+    </div>
               <span>Ubicación: <?= e($empleo['ubicacion']) ?></span>
             <?php endif; ?>
             <?php if (!empty($empleo['salario'])): ?>
