@@ -4,7 +4,7 @@
   <div class="contenedor">
     <span class="etiqueta">PANEL GENERAL DE CONTROL</span>
     <h1>Administración de Vantia</h1>
-    <p>Supervisión de empresas verificadas (<code>empresas</code>), tutores legales (<code>tutores</code>), menores de edad (<code>usuarios_men</code>) y mayores de edad (<code>usuarios_may</code>).</p>
+    <p>Supervisión de empresas verificadas, tutores legales, menores de edad y mayores de edad en la plataforma.</p>
     
     <div style="margin-top:1rem;">
       <a href="index.php?pagina=trabajos" class="boton boton-sm" style="background:#e2f5e8; color:#1f7a46;">Bolsa pública de empleos →</a>
@@ -21,40 +21,34 @@
     <div class="tarjeta">
       <span class="numero">01 · EMPRESAS</span>
       <h2><?= (int) $totalEmpresas ?></h2>
-      <p>Tabla <code>empresas</code></p>
     </div>
     <div class="tarjeta">
       <span class="numero">02 · MENORES (&lt;18)</span>
       <h2><?= (int) ($totalMenores ?? 0) ?></h2>
-      <p>Tabla <code>usuarios_men</code></p>
     </div>
     <div class="tarjeta">
       <span class="numero">03 · MAYORES (&ge;18)</span>
       <h2><?= (int) ($totalMayores ?? 0) ?></h2>
-      <p>Tabla <code>usuarios_may</code></p>
     </div>
     <div class="tarjeta">
       <span class="numero">04 · VACANTES</span>
       <h2><?= (int) $totalEmpleos ?></h2>
-      <p>Ofertas de empleo activas.</p>
     </div>
     <div class="tarjeta">
       <span class="numero">05 · POSTULACIONES</span>
       <h2><?= (int) $totalPostulaciones ?></h2>
-      <p>Aplicaciones procesadas.</p>
     </div>
     <div class="tarjeta">
       <span class="numero">06 · TUTORES</span>
       <h2><?= (int) ($totalTutores ?? 0) ?></h2>
-      <p>Tabla <code>tutores</code></p>
     </div>
   </div>
 
-  <!-- TABLA 1: Empresas Registradas (Tabla `empresas`) -->
+  <!-- TABLA 1: Empresas Registradas -->
   <div class="bloque-panel" style="margin-bottom:3rem;">
     <div class="titulo-seccion">
       <div>
-        <span class="etiqueta">TABLA: EMPRESAS</span>
+        <span class="etiqueta">EMPRESAS REGISTRADAS</span>
         <h2>Organizaciones y Validación Fiscal (NIT / ROE)</h2>
         <p class="texto-suave">Empresas registradas en la base de datos con verificación laboral.</p>
       </div>
@@ -167,11 +161,11 @@
     </div>
   </div>
 
-  <!-- TABLA 2: Jóvenes Menores de 18 años (Tabla `usuarios_men`) -->
+  <!-- TABLA 2: Jóvenes Menores de 18 años -->
   <div class="bloque-panel" style="margin-bottom:3rem;">
     <div class="titulo-seccion">
       <div>
-        <span class="etiqueta">TABLA: USUARIOS_MEN</span>
+        <span class="etiqueta">JÓVENES MENORES DE EDAD</span>
         <h2>Jóvenes Menores de 18 años (16 y 17 años con Tutor Legal)</h2>
         <p class="texto-suave">Postulantes menores de edad que requieren consentimiento y datos de su tutor legal.</p>
       </div>
@@ -194,7 +188,7 @@
         <tbody>
           <?php if (empty($usuariosMen)): ?>
             <tr>
-              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay jóvenes menores de 18 años registrados en <code>usuarios_men</code>.</td>
+              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay jóvenes menores de 18 años registrados actualmente.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($usuariosMen as $umen): ?>
@@ -263,11 +257,11 @@
     </div>
   </div>
 
-  <!-- TABLA 3: Tutores Legales y Jóvenes a su Cargo (Tabla `tutores`) -->
+  <!-- TABLA 3: Tutores Legales y Jóvenes a su Cargo -->
   <div class="bloque-panel" style="margin-bottom:3rem;">
     <div class="titulo-seccion">
       <div>
-        <span class="etiqueta">TABLA: TUTORES</span>
+        <span class="etiqueta">TUTORES LEGALES</span>
         <h2>Tutores Legales y Jóvenes Menores a su Cargo</h2>
         <p class="texto-suave">Padres, madres o tutores legales responsables de los postulantes menores de edad (16 y 17 años).</p>
       </div>
@@ -290,7 +284,7 @@
         <tbody>
           <?php if (empty($tutores)): ?>
             <tr>
-              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay tutores registrados actualmente en la tabla <code>tutores</code>.</td>
+              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay tutores registrados actualmente.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($tutores as $tut): ?>
@@ -315,7 +309,7 @@
                     <?= e($tut['menor_nombre']) ?>
                   </div>
                   <div style="font-size:11px; color:var(--gris);">
-                    ID Joven: <code>#<?= (int) $tut['usuario_men_id'] ?></code> en <code>usuarios_men</code>
+                    ID Joven: <code>#<?= (int) $tut['usuario_men_id'] ?></code>
                   </div>
                 </td>
                 <td>
@@ -345,11 +339,11 @@
     </div>
   </div>
 
-  <!-- TABLA 4: Jóvenes Mayores de 18 años y Administradores (Tabla `usuarios_may`) -->
+  <!-- TABLA 4: Jóvenes Mayores de 18 años y Administradores -->
   <div class="bloque-panel">
     <div class="titulo-seccion">
       <div>
-        <span class="etiqueta">TABLA: USUARIOS_MAY</span>
+        <span class="etiqueta">JÓVENES MAYORES Y ADMINISTRADORES</span>
         <h2>Jóvenes Mayores de 18 años y Administradores</h2>
         <p class="texto-suave">Cuentas individuales de postulantes mayores de edad y personal administrativo.</p>
       </div>
@@ -372,7 +366,7 @@
         <tbody>
           <?php if (empty($usuariosMay)): ?>
             <tr>
-              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay usuarios mayores registrados en <code>usuarios_may</code>.</td>
+              <td colspan="8" style="text-align:center; padding:1.5rem; color:var(--gris);">No hay usuarios mayores registrados actualmente.</td>
             </tr>
           <?php else: ?>
             <?php foreach ($usuariosMay as $umay): ?>

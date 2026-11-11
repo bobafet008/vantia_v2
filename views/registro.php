@@ -43,8 +43,9 @@
         <label for="representante">Nombre del representante / persona de contacto *</label>
         <input id="representante" name="representante" type="text" required maxlength="150" value="<?= e($form['representante'] ?? ($tipo === 'empresa' ? 'Misael V.' : '')) ?>" placeholder="Ej. Misael V.">
 
-        <label for="nit">Número de NIT</label>
-        <input id="nit" name="nit" type="text" maxlength="50" value="<?= e($form['nit'] ?? '') ?>" placeholder="Ej. 1029384756">
+        <label for="nit">Número de NIT *</label>
+        <input id="nit" name="nit" type="text" required minlength="15" maxlength="50" pattern="[0-9]{15,}" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" value="<?= e($form['nit'] ?? '') ?>" placeholder="Ej. 102938475600015" title="El NIT debe ser de mínimo 15 dígitos numéricos">
+        <small style="display:block; margin-top:-4px; margin-bottom:8px; color:var(--gris);">Mínimo 15 dígitos numéricos.</small>
 
         <label for="roe_archivo">Certificado / Código QR de ROE (Formato de imagen) *</label>
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:1rem; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
