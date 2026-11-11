@@ -80,12 +80,12 @@
                   <strong><?= e($emp['nombre']) ?></strong>
                   <?php if (!empty($emp['representante'])): ?>
                     <div style="font-size:0.82rem; color:var(--texto-suave, #64748b); margin-top:2px;">
-                      👤 Rep: <?= e($emp['representante']) ?>
+                      Rep: <?= e($emp['representante']) ?>
                     </div>
                   <?php endif; ?>
                 </td>
                 <td><a href="mailto:<?= e($emp['correo']) ?>" class="enlace-contacto"><?= e($emp['correo']) ?></a></td>
-                <td><?= !empty($emp['telefono']) ? e($emp['telefono']) : '<span class="texto-suave">S/T</span>' ?></td>
+                <td><?= !empty($emp['telefono']) ? e($emp['telefono']) : '<span class="texto-suave">-</span>' ?></td>
                 <td>
                   <div>NIT: <code><?= e($emp['nit'] ?? 'S/N') ?></code></div>
                   <div style="margin-top:6px;">
@@ -199,7 +199,7 @@
                   <span class="badge-menor" style="margin-left:6px; font-size:11px;">Menor de edad</span>
                 </td>
                 <td><a href="mailto:<?= e($umen['correo']) ?>" class="enlace-contacto"><?= e($umen['correo']) ?></a></td>
-                <td><?= !empty($umen['telefono']) ? e($umen['telefono']) : '<span class="texto-suave">S/T</span>' ?></td>
+                <td><?= !empty($umen['telefono']) ? e($umen['telefono']) : '<span class="texto-suave">-</span>' ?></td>
                 <td>
                   <?= e($umen['fecha_nacimiento']) ?>
                   <?php if (!empty($umen['fecha_nacimiento'])): ?>
@@ -301,7 +301,7 @@
                 </td>
                 <td>
                   <a href="tel:<?= e($tut['telefono']) ?>" class="enlace-contacto">
-                    📞 <?= e($tut['telefono']) ?>
+                    <?= e($tut['telefono']) ?>
                   </a>
                 </td>
                 <td>
@@ -381,7 +381,7 @@
                 <td>
                   <a href="mailto:<?= e($umay['correo']) ?>" class="enlace-contacto"><?= e($umay['correo']) ?></a>
                 </td>
-                <td><?= !empty($umay['telefono']) ? e($umay['telefono']) : '<span class="texto-suave">S/T</span>' ?></td>
+                <td><?= !empty($umay['telefono']) ? e($umay['telefono']) : '<span class="texto-suave">-</span>' ?></td>
                 <td>
                   <?php if (!empty($umay['fecha_nacimiento'])): ?>
                     <?= e($umay['fecha_nacimiento']) ?>
