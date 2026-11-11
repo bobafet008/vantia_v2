@@ -26,37 +26,50 @@ class UsuarioController
             $error = 'Completa el nombre y proporciona un correo válido.';
         } elseif (strlen($contrasena) < 6) {
             $error = 'La contraseña debe tener al menos 6 caracteres.';
+        } elseif ($telefono === '') {
+            $error = 'El número de teléfono / WhatsApp es obligatorio.';
         }
 
-        $datosUsuario = [
-            'nombre' => $nombre,
-            'correo' => $correo,
-            'contrasena' => password_hash($contrasena, PASSWORD_DEFAULT),
-            'tipo' => $tipo,
-            'telefono' => $telefono ?: null,
-            'fecha_nacimiento' => null,
-            'es_menor' => 0,
-            'tutor_nombre' => null,
-            'tutor_telefono' => null,
-            'tutor_relacion' => null,
-            'nit' => null,
-            'roe' => null,
-            'descripcion_empresa' => null,
-        ];
+        $hashContrasena = password_hash($contrasena, PASSWORD_DEFAULT);
+        $esMenor = false;
 
         // Validaciones específicas según el tipo de usuario
         if (!isset($error)) {
             if ($tipo === 'empresa') {
+                $representante = trim($_POST['representante'] ?? '');
                 $nit = trim($_POST['nit'] ?? '');
-                $roe = trim($_POST['roe'] ?? '');
                 $descripcion = trim($_POST['descripcion_empresa'] ?? '');
 
-                if ($roe === '') {
-                    $error = 'El número de registro ROE es obligatorio para la empresa.';
+                // Procesamiento del certificado / código QR ROE en formato de imagen
+                $roePath = 'uploads/roe/roe_default.png';
+                if (isset($_FILES['roe_archivo']) && $_FILES['roe_archivo']['error'] === UPLOAD_ERR_OK) {
+                    $subido = subirArchivo('roe_archivo', 'roe', 'roe');
+                    if ($subido === false) {
+                        $error = 'El certificado ROE debe ser una imagen válida (JPG, PNG) y no superar los 5MB.';
+                    } elseif ($subido !== null) {
+                        $roePath = 'uploads/' . $subido;
+                    }
+                } elseif (!empty($_POST['roe_actual'])) {
+                    $roePath = trim($_POST['roe_actual']);
+                }
+
+                if ($representante === '') {
+                    $error = 'El nombre del representante de la empresa es obligatorio.';
+                } elseif (empty($roePath)) {
+                    $error = 'La imagen o código QR de ROE es obligatorio para la empresa.';
                 } else {
-                    $datosUsuario['nit'] = $nit ?: null;
-                    $datosUsuario['roe'] = $roe;
-                    $datosUsuario['descripcion_empresa'] = $descripcion ?: null;
+                    $datosEmpresa = [
+                        'nombre' => $nombre,
+                        'representante' => $representante,
+                        'nit' => $nit ?: null,
+                        'roe' => $roePath,
+                        'correo' => $correo,
+                        'contrasena' => $hashContrasena,
+                        'telefono' => $telefono,
+                        'descripcion' => $descripcion ?: null,
+                        'documento_legal_path' => null,
+                        'verificada' => 1,
+                    ];
                 }
             } else {
                 // Empleado / Candidato
@@ -64,9 +77,6 @@ class UsuarioController
                 if ($fechaNacimiento === '') {
                     $error = 'Ingresa tu fecha de nacimiento.';
                 } else {
-                    $datosUsuario['fecha_nacimiento'] = $fechaNacimiento;
-                    
-                    // Cálculo de edad para validación y protección de menores
                     $nac = new DateTime($fechaNacimiento);
                     $hoy = new DateTime();
                     $edad = $hoy->diff($nac)->y;
@@ -74,7 +84,8 @@ class UsuarioController
                     if ($edad < 16) {
                         $error = 'Debes tener al menos 16 años para crear una cuenta en la plataforma.';
                     } elseif ($edad < 18) {
-                        $datosUsuario['es_menor'] = 1;
+                        // Menor de 18 años -> tabla usuarios_men
+                        $esMenor = true;
                         $tutorNombre = trim($_POST['tutor_nombre'] ?? '');
                         $tutorTel = trim($_POST['tutor_telefono'] ?? '');
                         $tutorRel = trim($_POST['tutor_relacion'] ?? '');
@@ -82,10 +93,32 @@ class UsuarioController
                         if ($tutorNombre === '' || $tutorTel === '') {
                             $error = 'Al tener entre 16 y 17 años, es obligatorio ingresar el nombre y teléfono de tu tutor(a) legal.';
                         } else {
-                            $datosUsuario['tutor_nombre'] = $tutorNombre;
-                            $datosUsuario['tutor_telefono'] = $tutorTel;
-                            $datosUsuario['tutor_relacion'] = $tutorRel ?: 'Tutor legal';
+                            $datosMenor = [
+                                'nombre' => $nombre,
+                                'correo' => $correo,
+                                'contrasena' => $hashContrasena,
+                                'telefono' => $telefono ?: null,
+                                'fecha_nacimiento' => $fechaNacimiento,
+                                'cv_path' => null,
+                                'permiso_tutor_path' => null,
+                            ];
+                            $datosTutor = [
+                                'nombre'   => $tutorNombre,
+                                'telefono' => $tutorTel,
+                                'relacion' => $tutorRel ?: 'Tutor legal',
+                            ];
                         }
+                    } else {
+                        // Mayor de 18 años -> tabla usuarios_may
+                        $datosMayor = [
+                            'nombre' => $nombre,
+                            'correo' => $correo,
+                            'contrasena' => $hashContrasena,
+                            'tipo' => 'empleado',
+                            'telefono' => $telefono ?: null,
+                            'fecha_nacimiento' => $fechaNacimiento,
+                            'cv_path' => null,
+                        ];
                     }
                 }
             }
@@ -101,28 +134,86 @@ class UsuarioController
         }
 
         require __DIR__ . '/../../config/database.php';
-        require_once __DIR__ . '/../Models/Usuario.php';
-        $modelo = new Usuario($conexion);
 
-        try {
-            $modelo->crear($datosUsuario);
-            $nuevoId = (int) $conexion->lastInsertId();
+        if ($tipo === 'empresa') {
+            require_once __DIR__ . '/../Models/Empresa.php';
+            $modeloEmpresa = new Empresa($conexion);
 
-            // Iniciar sesión automáticamente tras el registro
-            session_regenerate_id(true);
-            $_SESSION['usuario_id'] = $nuevoId;
-            $_SESSION['usuario'] = $nombre;
-            $_SESSION['correo'] = $correo;
-            $_SESSION['tipo'] = $tipo;
+            try {
+                $modeloEmpresa->crear($datosEmpresa);
+                $nuevoId = (int) $conexion->lastInsertId();
 
-            header('Location: index.php?pagina=' . ($tipo === 'empresa' ? 'panel_empresa' : 'trabajos'));
-            exit;
-        } catch (PDOException $errorBase) {
-            vista('registro', [
-                'tipo' => $tipo,
-                'error' => 'Ese correo ya está registrado en la plataforma.',
-                'form' => $_POST,
-            ]);
+                session_regenerate_id(true);
+                $_SESSION['usuario_id'] = $nuevoId;
+                $_SESSION['usuario'] = $nombre;
+                $_SESSION['correo'] = $correo;
+                $_SESSION['tipo'] = 'empresa';
+                $_SESSION['representante'] = $representante ?: null;
+
+                header('Location: index.php?pagina=panel_empresa');
+                exit;
+            } catch (PDOException $errorBase) {
+                vista('registro', [
+                    'tipo' => 'empresa',
+                    'error' => 'Ese correo ya está registrado en la plataforma.',
+                    'form' => $_POST,
+                ]);
+                return;
+            }
+        } else {
+            // Empleado: menor en usuarios_men o mayor en usuarios_may
+            if ($esMenor) {
+                require_once __DIR__ . '/../Models/UsuarioMen.php';
+                $modeloMen = new UsuarioMen($conexion);
+
+                try {
+                    $nuevoId = $modeloMen->crearConTutor($datosMenor, $datosTutor);
+
+                    session_regenerate_id(true);
+                    $_SESSION['usuario_id'] = $nuevoId;
+                    $_SESSION['usuario'] = $nombre;
+                    $_SESSION['correo'] = $correo;
+                    $_SESSION['tipo'] = 'empleado';
+                    $_SESSION['es_menor'] = 1;
+                    $_SESSION['tabla_usuario'] = 'usuarios_men';
+
+                    header('Location: index.php?pagina=trabajos');
+                    exit;
+                } catch (PDOException $errorBase) {
+                    vista('registro', [
+                        'tipo' => 'empleado',
+                        'error' => 'Ese correo ya está registrado en la plataforma.',
+                        'form' => $_POST,
+                    ]);
+                    return;
+                }
+            } else {
+                require_once __DIR__ . '/../Models/UsuarioMay.php';
+                $modeloMay = new UsuarioMay($conexion);
+
+                try {
+                    $modeloMay->crear($datosMayor);
+                    $nuevoId = (int) $conexion->lastInsertId();
+
+                    session_regenerate_id(true);
+                    $_SESSION['usuario_id'] = $nuevoId;
+                    $_SESSION['usuario'] = $nombre;
+                    $_SESSION['correo'] = $correo;
+                    $_SESSION['tipo'] = 'empleado';
+                    $_SESSION['es_menor'] = 0;
+                    $_SESSION['tabla_usuario'] = 'usuarios_may';
+
+                    header('Location: index.php?pagina=trabajos');
+                    exit;
+                } catch (PDOException $errorBase) {
+                    vista('registro', [
+                        'tipo' => 'empleado',
+                        'error' => 'Ese correo ya está registrado en la plataforma.',
+                        'form' => $_POST,
+                    ]);
+                    return;
+                }
+            }
         }
     }
 }

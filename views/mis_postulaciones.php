@@ -69,6 +69,33 @@ if (!empty($postulaciones)) {
             <h2><?= e($post['empleo_titulo']) ?></h2>
             <p class="empresa-nombre">Empresa: <strong><?= e($post['empresa_nombre']) ?></strong></p>
 
+            <?php if (!empty($post['empresa_roe'])): ?>
+              <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:10px 14px; margin:12px 0; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <a href="<?= e(rutaArchivo($post['empresa_roe'])) ?>" target="_blank" title="Ver Certificado / Código QR ROE">
+                    <img src="<?= e(rutaArchivo($post['empresa_roe'])) ?>" alt="Certificado ROE" style="width:56px; height:56px; object-fit:contain; background:#fff; border:1px solid #94a3b8; border-radius:6px; padding:2px; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:transform 0.15s ease;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">
+                  </a>
+                  <div>
+                    <span style="font-weight:700; color:#0f172a; font-size:0.88rem; display:block;">
+                      Certificado ROE Verificado
+                    </span>
+                    <span style="font-size:0.75rem; color:#64748b; display:block;">
+                      Registro Obligatorio de Empleadores · Ministerio de Trabajo
+                    </span>
+                    <?php if (!empty($post['empresa_nit'])): ?>
+                      <span style="font-size:0.75rem; color:#475569;">NIT: <code><?= e($post['empresa_nit']) ?></code></span>
+                    <?php endif; ?>
+                    <?php if (!empty($post['empresa_representante'])): ?>
+                      <span style="font-size:0.75rem; color:#475569; margin-left:8px;">Rep: <strong><?= e($post['empresa_representante']) ?></strong></span>
+                    <?php endif; ?>
+                  </div>
+                </div>
+                <a href="<?= e(rutaArchivo($post['empresa_roe'])) ?>" target="_blank" class="boton-sm boton-outline" style="font-size:0.75rem; padding:4px 10px; border-color:#94a3b8; color:#1e293b;">
+                  Ver QR ROE ↗
+                </a>
+              </div>
+            <?php endif; ?>
+
             <div class="trabajo-meta">
               <?php if (!empty($post['ubicacion'])): ?><span>Ubicación: <?= e($post['ubicacion']) ?></span><?php endif; ?>
               <?php if (!empty($post['salario'])): ?><span>Salario: <?= e($post['salario']) ?></span><?php endif; ?>
